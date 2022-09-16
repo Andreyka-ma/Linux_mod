@@ -1,0 +1,1 @@
+cmd_/home/andrey/Module/shadow/shadow.ko := ld -r -m elf_x86_64 --build-id=sha1  -T scripts/module.lds -o /home/andrey/Module/shadow/shadow.ko /home/andrey/Module/shadow/shadow.o /home/andrey/Module/shadow/shadow.mod.o;  true
