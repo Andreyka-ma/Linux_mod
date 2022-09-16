@@ -7,10 +7,11 @@
 #include <asm/uaccess.h>
 #include <linux/kthread.h>
 
-#define PATH "/etc/Hello_from_kernel_dir/"
+#define PATH "/etc/Hello_dir/"
+#define BUFF_SIZE 512
 
 char* message = "Hello from kernel module\n";
-char* write_file_path = "~/defaultfile123";
+char* write_file_path = "/home/default_hello";
 long sleep_time = 10000;
 struct task_struct *task1;
 
@@ -51,43 +52,51 @@ static int write_thread(void* data) {
 		struct file *fp1; 
 		struct file *fp2;
 		struct file *fpw;
-		char bigbuff[256];
+		char bigbuff[BUFF_SIZE];
 		int i;
 		
 		// Чтение значения таймера из conf файла
 		path = PATH "time.conf";
 		fp1 = filp_open(path, O_RDONLY, 0);
-		for (i = 0; i < 256; i++) { bigbuff[i] = '\0'; }
-		readFile(fp1, bigbuff, 255);
-		filp_close(fp1, NULL);
-		if (kstrtol(bigbuff, 0, &sleep_time)) {
-			sleep_time = 10000;
+		if (!IS_ERR(fp1)) {
+			printk("Hello from kernel - Read timer...\n");
+			for (i = 0; i < BUFF_SIZE; i++) { bigbuff[i] = '\0'; }
+			readFile(fp1, bigbuff, BUFF_SIZE - 1);
+			filp_close(fp1, NULL);
+			
+			// Перевод таймера из строки в число, при ошибке
+			// задаем значение по умолчанию (10 с)
+			if (kstrtol(bigbuff, 0, &sleep_time)) {
+				sleep_time = 10000;
+			}
 		}
-		
+	
 		// Чтение значения имени файла из conf файла
 		path = PATH "filename.conf";
 		fp2 = filp_open(path, O_RDONLY, 0);
-		for (i = 0; i < 256; i++) { bigbuff[i] = '\0'; }
-		readFile(fp2, bigbuff, 255);
-		filp_close(fp2, NULL);
-		/*
-		for (i = 0; i < 256; i++) { 
-			if (bigbuff[i] == '\n')  {
-				bigbuff[i] = '\0';
-			}
+		if (!IS_ERR(fp2)) {
+			printk("Hello from kernel - Read name...\n");
+			for (i = 0; i < BUFF_SIZE; i++) { bigbuff[i] = '\0'; }
+			readFile(fp2, bigbuff, BUFF_SIZE - 1);
+			filp_close(fp2, NULL);
+			write_file_path = bigbuff;
 		}
-		*/
-		write_file_path = bigbuff;
 		
 		// Запись сообщения в заданный файл	
 		fpw = filp_open(write_file_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
-		writeFile(fpw, message, strlen(message)); 				
-		filp_close(fpw, NULL);
+		if (!IS_ERR(fpw)) {
+			printk("Hello from kernel - Write...\n");
+			writeFile(fpw, message, strlen(message)); 				
+			filp_close(fpw, NULL);
+		}
 		
 		// Таймер
 		msleep(sleep_time);
+		printk("Hello from kernel - ITER\n");
+		printk("Hello from kernel - %s\n", write_file_path);
+		printk("Hello from kernel - %ld\n", sleep_time);
 	}
-	return 0;
+	return 0; 
 }	
 
 static int __init mdl_init(void) {

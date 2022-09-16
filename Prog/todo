@@ -1,12 +1,5 @@
-Segfaut if conf folder doesnt exist
-No conf files case
-Fix buffer \n - Properly clear buff?
-Filepath check < 256
-
-======================================
 Float timer?
 
 ======================================
 unsigned long long offset = 0;
 vfs_read(fp2, bigbuff, 99, &offset); // Breaks everything?
-

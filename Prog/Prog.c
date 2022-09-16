@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <sys/stat.h>
 
-#define PATH "/etc/Hello_from_kernel_dir/"
+#define PATH "/etc/Hello_dir/"
 
 int main(int argc, char **argv){
+  mkdir(PATH, 0777);
   if(argc == 1) {
     printf("-f to change the filepath\n-t to change the timer (s)\n\
 ex:\nsudo ./Prog -f ~/filename123\nsudo ./Prog -t 5\n");
@@ -28,6 +30,10 @@ ex:\nsudo ./Prog -f ~/filename123\nsudo ./Prog -t 5\n");
     	return 0;
   	}
   	if (!strcmp(argv[1], "-f")) {
+  		if (strlen(argv[2]) > 511) {
+	  		printf("File path too long\n");
+  			return -1;
+  		}
 	    conf_path = PATH "filename.conf";
 	    FILE *out = fopen(conf_path, "w");
 		fprintf(out, "%s", argv[2]); 
