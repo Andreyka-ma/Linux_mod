@@ -7,12 +7,28 @@
 #include <asm/uaccess.h>
 #include <linux/kthread.h>
 
-#define PATH "/etc/Andreyka/"
-#define MSG_SIZE 25
-char message[MSG_SIZE] = "Hello from kernel module\n";
-char* write_file_path = PATH "filest";
+#define PATH "/etc/Hello_from_kernel_dir/"
+
+char* message = "Hello from kernel module\n";
+char* write_file_path = "~/Hello/defaultfile123";
 int sleep_time = 1000;
 struct task_struct *task1;
+
+int rtw_atoi(char *s) {
+	int num = 0, flag = 0;
+	int i;
+	for (i = 0; i <= strlen(s); i++) {
+		if (s[i] >= '0' && s[i] <= '9')
+			num = num * 10 + s[i] - '0';
+		else if (s[0] == '-' && i == 0)
+			flag = 1;
+		else
+			break;
+	}
+	if (flag == 1)
+		num = num * -1;
+	return num;
+}
 
 static int readFile(struct file *fp, char *buf, int len) {
 	int rlen = 0, sum = 0;
@@ -27,18 +43,6 @@ static int readFile(struct file *fp, char *buf, int len) {
 	}
 	return  sum;
 }
-
-/*
-static void myRead(const char* path) {
-	struct file *fp = filp_open(path, O_RDONLY, 0);
-	char bigbuff[100];
-	int i = 0;
-	for (; i < 100; i++) { bigbuff[i] = '\0'; }
-	readFile(fp, bigbuff, 99);
-	printk(bigbuff); 		
-	filp_close(fp, NULL);
-}
-*/
 
 static int writeFile(struct file *fp, char *buf, int len) {
 	int wlen = 0, sum = 0;
@@ -56,39 +60,20 @@ static int writeFile(struct file *fp, char *buf, int len) {
 
 static void myWrite(const char* path) {
 	struct file *fp = filp_open(path, O_CREAT | O_WRONLY | O_APPEND, 0666);
-	writeFile(fp, message, MSG_SIZE); 				
+	writeFile(fp, message, strlen(message)); 				
 	filp_close(fp, NULL);
 }
 
-int rtw_atoi(char *s) {
-
-	int num = 0, flag = 0;
-	int i;
-	for (i = 0; i <= strlen(s); i++) {
-		if (s[i] >= '0' && s[i] <= '9')
-			num = num * 10 + s[i] - '0';
-		else if (s[0] == '-' && i == 0)
-			flag = 1;
-		else
-			break;
-	}
-
-	if (flag == 1)
-		num = num * -1;
-
-	return num;
-
-}
-
 static int write_thread(void* data) {
-	//int i = 40;
-	while(1) {
-
-		char * path = PATH "time.conf";
-		struct file *fp = filp_open(path, O_RDONLY, 0);
+	while(!kthread_should_stop()) {
+		char * path;
+		struct file *fp;
 		char bigbuff[100];
-		int i = 0;
-		for (; i < 100; i++) { bigbuff[i] = '\0'; }
+		int i;
+		
+		path = PATH "time.conf";
+		fp = filp_open(path, O_RDONLY, 0);
+		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
 		readFile(fp, bigbuff, 99);
 		filp_close(fp, NULL);
 		
@@ -96,37 +81,36 @@ static int write_thread(void* data) {
 		
 		path = PATH "filename.conf";
 		fp = filp_open(path, O_RDONLY, 0);
-		i = 0;
-		for (; i < 100; i++) { bigbuff[i] = '\0'; }
+		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
 		readFile(fp, bigbuff, 99);
 		filp_close(fp, NULL);
 		
-	    i = 0;
-		for (; i < 100; i++) { 
+		for (i = 0; i < 100; i++) { 
 			if (bigbuff[i] == '\n')  {
 				bigbuff[i] = '\0';
 			}
 		}
 		
-		
 		write_file_path = bigbuff;
-		//write_file_path[sizeof(write_file_path) - 1] = '\0';
 			
 		//printk(bigbuff);
-		msleep(sleep_time);
 		myWrite(write_file_path);
+		msleep(sleep_time);
 	}
 	return 0;
 }	
 
 static int __init mdl_init(void) {
-	pr_info("Shadow init\n");
+	pr_info("Hello from kernel - init\n");
 	task1 = kthread_run(&write_thread, NULL, "Write_thread");
 	return 0;
 }
 
 static void __exit mdl_exit(void) {
-  	pr_info("Shadow EXIT\n"); 
+	int ret = kthread_stop(task1);
+	pr_info("Hello from kernel - cleanup, waiting for task 1...\n"); 
+	pr_info("Hello from kernel - task 1 returned with code %d", ret);
+  	pr_info("Hello from kernel - exit\n"); 
 }
 
 MODULE_LICENSE("GPL");
