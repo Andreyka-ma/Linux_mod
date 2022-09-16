@@ -14,6 +14,7 @@ char* write_file_path = "~/defaultfile123";
 long sleep_time = 10000;
 struct task_struct *task1;
 
+// Функция чтения файла
 static int readFile(struct file *fp, char *buf, int len) {
 	int rlen = 0, sum = 0;
 	while (sum < len) {
@@ -28,6 +29,7 @@ static int readFile(struct file *fp, char *buf, int len) {
 	return  sum;
 }
 
+// Функция записи в файл
 static int writeFile(struct file *fp, char *buf, int len) {
 	int wlen = 0, sum = 0;
 	while (sum < len) {
@@ -42,20 +44,21 @@ static int writeFile(struct file *fp, char *buf, int len) {
 	return sum;
 }
 
+// Основная функция
 static int write_thread(void* data) {
 	while(!kthread_should_stop()) {
 		char * path;
 		struct file *fp1; 
 		struct file *fp2;
 		struct file *fpw;
-		char bigbuff[100];
+		char bigbuff[256];
 		int i;
 		
 		// Чтение значения таймера из conf файла
 		path = PATH "time.conf";
 		fp1 = filp_open(path, O_RDONLY, 0);
-		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
-		readFile(fp1, bigbuff, 99);
+		for (i = 0; i < 256; i++) { bigbuff[i] = '\0'; }
+		readFile(fp1, bigbuff, 255);
 		filp_close(fp1, NULL);
 		if (kstrtol(bigbuff, 0, &sleep_time)) {
 			sleep_time = 10000;
@@ -64,14 +67,16 @@ static int write_thread(void* data) {
 		// Чтение значения имени файла из conf файла
 		path = PATH "filename.conf";
 		fp2 = filp_open(path, O_RDONLY, 0);
-		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
-		readFile(fp2, bigbuff, 99);
+		for (i = 0; i < 256; i++) { bigbuff[i] = '\0'; }
+		readFile(fp2, bigbuff, 255);
 		filp_close(fp2, NULL);
-		for (i = 0; i < 100; i++) { 
+		/*
+		for (i = 0; i < 256; i++) { 
 			if (bigbuff[i] == '\n')  {
 				bigbuff[i] = '\0';
 			}
 		}
+		*/
 		write_file_path = bigbuff;
 		
 		// Запись сообщения в заданный файл	
