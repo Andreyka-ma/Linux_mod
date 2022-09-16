@@ -1,38 +1,42 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include<stdbool.h>
+#include <stdbool.h>
+#include <ctype.h>
 
-#define PATH "/etc/Andreyka/"
+#define PATH "/etc/Hello_from_kernel_dir/"
 
-int main(int C, char **V){
-  printf("%d", C);
-  if(C==1){
-    printf("hello\n");
+int main(int argc, char **argv){
+  if(argc == 1) {
+    printf("-f to change the filepath\n-t to change the timer (s)\n\
+ex:\nsudo ./Prog -f ~/Hello/filename123\nsudo ./Prog -t 5\n");
     return 0;
   }
-  if(C==3){
-  	printf("%s", V[1]);
-  	bool test = false;
-  	char* path_t;
-  	if (!strcmp(V[1], "-t")) {
-  		test = true;
-	    path_t = PATH "time.conf";  	
-  	}
-  	if (!strcmp(V[1], "-f")) {
-  		test = true;
-	    path_t = PATH "filename.conf";  	
-  	}
-  	if (test) {
-  		printf(path_t);
-		FILE *in = fopen(path_t, "w");
-		fprintf(in, V[2]); 
-		fclose(in);
+  if(argc == 3) {
+  	char* conf_path;
+  	if (!strcmp(argv[1], "-t")) {
+  		for (int i = 0; argv[2][i] != '\0'; ++i) {
+  			if (!isdigit(argv[2][i]) || argv[2][0] == '0') {
+  				printf("Invalid number\n");
+  				return -1;
+  			}
+  		}
+	    conf_path = PATH "time.conf"; 	
+	    FILE *out = fopen(conf_path, "w");
+		fprintf(out, "%s000", argv[2]); 
+		fclose(out);
     	return 0;
-    }
-    else {
-    	return -1;
-    }
+  	}
+  	if (!strcmp(argv[1], "-f")) {
+	    conf_path = PATH "filename.conf";
+	    FILE *out = fopen(conf_path, "w");
+		fprintf(out, "%s", argv[2]); 
+		fclose(out);
+    	return 0;  	
+  	}
+	printf("Invalid arg name\n");
+	return -1;
   }
+  printf("Invalid arg count\n");
   return -1;
 }
