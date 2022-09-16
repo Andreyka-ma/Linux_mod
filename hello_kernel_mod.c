@@ -10,25 +10,9 @@
 #define PATH "/etc/Hello_from_kernel_dir/"
 
 char* message = "Hello from kernel module\n";
-char* write_file_path = "~/Hello/defaultfile123";
-int sleep_time = 1000;
+char* write_file_path = "~/defaultfile123";
+long sleep_time = 10000;
 struct task_struct *task1;
-
-int rtw_atoi(char *s) {
-	int num = 0, flag = 0;
-	int i;
-	for (i = 0; i <= strlen(s); i++) {
-		if (s[i] >= '0' && s[i] <= '9')
-			num = num * 10 + s[i] - '0';
-		else if (s[0] == '-' && i == 0)
-			flag = 1;
-		else
-			break;
-	}
-	if (flag == 1)
-		num = num * -1;
-	return num;
-}
 
 static int readFile(struct file *fp, char *buf, int len) {
 	int rlen = 0, sum = 0;
@@ -58,43 +42,44 @@ static int writeFile(struct file *fp, char *buf, int len) {
 	return sum;
 }
 
-static void myWrite(const char* path) {
-	struct file *fp = filp_open(path, O_CREAT | O_WRONLY | O_APPEND, 0666);
-	writeFile(fp, message, strlen(message)); 				
-	filp_close(fp, NULL);
-}
-
 static int write_thread(void* data) {
 	while(!kthread_should_stop()) {
 		char * path;
-		struct file *fp;
+		struct file *fp1; 
+		struct file *fp2;
+		struct file *fpw;
 		char bigbuff[100];
 		int i;
 		
+		// Чтение значения таймера из conf файла
 		path = PATH "time.conf";
-		fp = filp_open(path, O_RDONLY, 0);
+		fp1 = filp_open(path, O_RDONLY, 0);
 		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
-		readFile(fp, bigbuff, 99);
-		filp_close(fp, NULL);
+		readFile(fp1, bigbuff, 99);
+		filp_close(fp1, NULL);
+		if (kstrtol(bigbuff, 0, &sleep_time)) {
+			sleep_time = 10000;
+		}
 		
-		sleep_time = rtw_atoi(bigbuff);
-		
+		// Чтение значения имени файла из conf файла
 		path = PATH "filename.conf";
-		fp = filp_open(path, O_RDONLY, 0);
+		fp2 = filp_open(path, O_RDONLY, 0);
 		for (i = 0; i < 100; i++) { bigbuff[i] = '\0'; }
-		readFile(fp, bigbuff, 99);
-		filp_close(fp, NULL);
-		
+		readFile(fp2, bigbuff, 99);
+		filp_close(fp2, NULL);
 		for (i = 0; i < 100; i++) { 
 			if (bigbuff[i] == '\n')  {
 				bigbuff[i] = '\0';
 			}
 		}
-		
 		write_file_path = bigbuff;
-			
-		//printk(bigbuff);
-		myWrite(write_file_path);
+		
+		// Запись сообщения в заданный файл	
+		fpw = filp_open(write_file_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
+		writeFile(fpw, message, strlen(message)); 				
+		filp_close(fpw, NULL);
+		
+		// Таймер
 		msleep(sleep_time);
 	}
 	return 0;

@@ -1,3 +1,4 @@
 Segfaut if conf folder doesnt exist
+No conf files case
+Fix buffer \n - Properly clear buff?
 Float timer?
-Fix buffer \n

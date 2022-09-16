@@ -9,7 +9,7 @@
 int main(int argc, char **argv){
   if(argc == 1) {
     printf("-f to change the filepath\n-t to change the timer (s)\n\
-ex:\nsudo ./Prog -f ~/Hello/filename123\nsudo ./Prog -t 5\n");
+ex:\nsudo ./Prog -f ~/filename123\nsudo ./Prog -t 5\n");
     return 0;
   }
   if(argc == 3) {

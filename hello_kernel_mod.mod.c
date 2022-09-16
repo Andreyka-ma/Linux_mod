@@ -34,18 +34,19 @@ __used __section("__versions") = {
 	{ 0x92997ed8, "_printk" },
 	{ 0xd0da656b, "__stack_chk_fail" },
 	{ 0x87a21cb3, "__ubsan_handle_out_of_bounds" },
+	{ 0x5b8239ca, "__x86_return_thunk" },
 	{ 0xf9a482f9, "msleep" },
 	{ 0x27d6de24, "kernel_write" },
+	{ 0x754d539c, "strlen" },
+	{ 0x3854774b, "kstrtoll" },
 	{ 0x5cb5807d, "filp_close" },
 	{ 0x8f2bcc5, "kernel_read" },
 	{ 0x744ea3a0, "filp_open" },
 	{ 0xb3f7646e, "kthread_should_stop" },
-	{ 0x5b8239ca, "__x86_return_thunk" },
-	{ 0x754d539c, "strlen" },
 	{ 0xbdfb6dbb, "__fentry__" },
 };
 
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "5A4C6A56EDB5EFB9325381A");
+MODULE_INFO(srcversion, "C1024163DD5D397E4484749");
