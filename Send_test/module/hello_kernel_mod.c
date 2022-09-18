@@ -59,7 +59,7 @@ static int write_thread(void* data) {
 		path = PATH "time.conf";
 		fp1 = filp_open(path, O_RDONLY, 0);
 		if (!IS_ERR(fp1)) {
-			printk("Hello from kernel - Read timer...\n");
+			//printk("Hello from kernel - Read timer...\n");
 			for (i = 0; i < BUFF_SIZE; i++) { bigbuff[i] = '\0'; }
 			readFile(fp1, bigbuff, BUFF_SIZE - 1);
 			filp_close(fp1, NULL);
@@ -75,7 +75,7 @@ static int write_thread(void* data) {
 		path = PATH "filename.conf";
 		fp2 = filp_open(path, O_RDONLY, 0);
 		if (!IS_ERR(fp2)) {
-			printk("Hello from kernel - Read name...\n");
+			//printk("Hello from kernel - Read name...\n");
 			for (i = 0; i < BUFF_SIZE; i++) { bigbuff[i] = '\0'; }
 			readFile(fp2, bigbuff, BUFF_SIZE - 1);
 			filp_close(fp2, NULL);
@@ -85,16 +85,16 @@ static int write_thread(void* data) {
 		// Запись сообщения в заданный файл	
 		fpw = filp_open(write_file_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
 		if (!IS_ERR(fpw)) {
-			printk("Hello from kernel - Write...\n");
+			//printk("Hello from kernel - Write...\n");
 			writeFile(fpw, message, strlen(message)); 				
 			filp_close(fpw, NULL);
 		}
 		
 		// Таймер
 		msleep(sleep_time);
-		printk("Hello from kernel - ITER\n");
-		printk("Hello from kernel - %s\n", write_file_path);
-		printk("Hello from kernel - %ld\n", sleep_time);
+		//printk("Hello from kernel - ITER\n");
+		//printk("Hello from kernel - %s\n", write_file_path);
+		//printk("Hello from kernel - %ld\n", sleep_time);
 	}
 	return 0; 
 }	
